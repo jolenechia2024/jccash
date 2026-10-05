@@ -98,7 +98,7 @@ function Home({ state, update }: { state: State; update: Upd }) {
           for the rest of the trip · {st.daysLeft} days left · S${fmt(st.perWeek, 0)}/week
         </p>
         <div className="relative mt-6 h-2 overflow-hidden rounded-full bg-muted">
-          <div className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all" style={{ width: `${pct}%` }} />
+          <div className={`h-full rounded-full transition-all ${over || st.left < 0 ? "bg-accent" : "bg-gradient-to-r from-primary to-accent"}`} style={{ width: `${pct}%` }} />
         </div>
         <div className="relative mt-3 flex justify-between font-mono text-xs text-muted-foreground">
           <span>S${fmt(st.spent, 0)} of {fmt(state.budgetSgd, 0)}</span>
@@ -111,11 +111,11 @@ function Home({ state, update }: { state: State; update: Upd }) {
       <div className="grid grid-cols-2 gap-3">
         <div className="glass p-4">
           <p className="label-caps">Cash left</p>
-          <p className="mt-1 font-mono text-xl font-bold">{state.currency} {fmt(st.cashLeft, 0)}</p>
+          <p className={`mt-1 font-mono text-xl font-bold ${st.cashLeft < 0 ? "text-accent" : ""}`}>{state.currency} {fmt(st.cashLeft, 0)}</p>
         </div>
-        <div className="glass p-4">
+        <div className={`glass p-4 ${owed > 0 ? "ring-1 ring-accent/60" : ""}`}>
           <p className="label-caps">Owed to you</p>
-          <p className="mt-1 font-mono text-xl font-bold text-primary">S${fmt(owed, 0)}</p>
+          <p className={`mt-1 font-mono text-xl font-bold ${owed > 0 ? "text-accent" : "text-primary"}`}>S${fmt(owed, 0)}</p>
         </div>
       </div>
 
@@ -269,7 +269,7 @@ function SplitView({ state, update }: { state: State; update: Upd }) {
     <div className="space-y-4 animate-in fade-in duration-500">
       <section className="glass p-6">
         <p className="label-caps">Friends owe you</p>
-        <p className="mt-2 font-mono text-5xl font-bold text-primary">S${fmt(owed)}</p>
+        <p className={`mt-2 font-mono text-5xl font-bold ${owed > 0 ? "text-accent" : "text-primary"}`}>S${fmt(owed)}</p>
       </section>
       <section className="glass space-y-2 p-5">
         <div className="flex gap-2">
@@ -291,7 +291,7 @@ function SplitView({ state, update }: { state: State; update: Upd }) {
               <p className={`text-sm font-medium ${s.paid ? "line-through" : ""}`}>{s.name}</p>
               {s.note && <p className="text-xs text-muted-foreground">{s.note}</p>}
             </div>
-            <span className="font-mono text-sm font-bold">S${fmt(s.amount)}</span>
+            <span className={`font-mono text-sm font-bold ${s.paid ? "" : "text-accent"}`}>S${fmt(s.amount)}</span>
             <button onClick={() => update((st) => ({ ...st, splits: st.splits.filter((x) => x.id !== s.id) }))} className="text-xs text-muted-foreground hover:text-accent">✕</button>
           </div>
         ))}
