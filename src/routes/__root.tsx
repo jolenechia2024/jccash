@@ -76,7 +76,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "jccash" },
       { name: "description", content: "Offline exchange budget tracker." },
-      { name: "theme-color", content: "#0b0f0c" },
+      { name: "theme-color", content: "#111111" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "jccash" },

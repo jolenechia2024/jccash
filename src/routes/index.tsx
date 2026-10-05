@@ -46,28 +46,28 @@ type ThemeVariant = { primary: string; foreground: string };
 const THEMES: Record<string, { label: string; dark: ThemeVariant; light: ThemeVariant }> = {
   green: {
     label: "Green",
-    dark: { primary: "oklch(0.82 0.2 150)", foreground: "oklch(0.13 0.005 150)" },
-    light: { primary: "oklch(0.50 0.2 150)", foreground: "oklch(0.97 0.004 150)" },
+    dark: { primary: "oklch(0.82 0.2 150)", foreground: "oklch(0.13 0 0)" },
+    light: { primary: "oklch(0.50 0.2 150)", foreground: "oklch(0.97 0 0)" },
   },
   blue: {
     label: "Blue",
-    dark: { primary: "oklch(0.72 0.18 240)", foreground: "oklch(0.13 0.005 240)" },
-    light: { primary: "oklch(0.45 0.18 240)", foreground: "oklch(0.97 0.004 240)" },
+    dark: { primary: "oklch(0.72 0.18 240)", foreground: "oklch(0.13 0 0)" },
+    light: { primary: "oklch(0.45 0.18 240)", foreground: "oklch(0.97 0 0)" },
   },
   purple: {
     label: "Purple",
-    dark: { primary: "oklch(0.72 0.2 300)", foreground: "oklch(0.13 0.005 300)" },
-    light: { primary: "oklch(0.48 0.2 300)", foreground: "oklch(0.97 0.004 300)" },
+    dark: { primary: "oklch(0.72 0.2 300)", foreground: "oklch(0.13 0 0)" },
+    light: { primary: "oklch(0.48 0.2 300)", foreground: "oklch(0.97 0 0)" },
   },
   pink: {
     label: "Pink",
-    dark: { primary: "oklch(0.88 0.07 5)", foreground: "oklch(0.20 0.01 5)" },
-    light: { primary: "oklch(0.72 0.12 5)", foreground: "oklch(0.97 0.004 5)" },
+    dark: { primary: "oklch(0.88 0.07 5)", foreground: "oklch(0.13 0 0)" },
+    light: { primary: "oklch(0.72 0.12 5)", foreground: "oklch(0.97 0 0)" },
   },
   gold: {
     label: "Gold",
-    dark: { primary: "oklch(0.82 0.18 80)", foreground: "oklch(0.13 0.005 80)" },
-    light: { primary: "oklch(0.55 0.18 80)", foreground: "oklch(0.97 0.004 80)" },
+    dark: { primary: "oklch(0.82 0.18 80)", foreground: "oklch(0.13 0 0)" },
+    light: { primary: "oklch(0.55 0.18 80)", foreground: "oklch(0.97 0 0)" },
   },
 };
 
@@ -2970,7 +2970,6 @@ function Settings({ state, update, isDark }: { state: State; update: Upd; isDark
             </div>
           ))}
           <div className="space-y-2 bg-card px-4 py-3">
-            <p className="label-caps">new recurring cost</p>
             <Input value={rl} onChange={setRl} placeholder="Label" />
             <div className="flex gap-2">
               <Input type="number" value={ra} onChange={setRa} placeholder="Amount" />
