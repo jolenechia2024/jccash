@@ -1766,7 +1766,7 @@ function SplitView({
               />
             </div>
             <RateHint fetching={fetchingAdd} rate={addFetchedRate} currency={addCurrency} />
-            <Input value={note} onChange={setNote} placeholder="For what? (optional)" />
+            <Input value={note} onChange={setNote} placeholder="For what?" />
             <button
               onClick={add}
               className="w-full rounded-xl bg-primary py-3 text-sm font-bold uppercase tracking-widest text-primary-foreground"
