@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import capybaraLogo from "@/assets/capybara-logo.png";
 import { useState } from "react";
 import {
   CATEGORIES, CAT_EMOJI, exportCsv, fmt, sgd, stats, uid, useStore, type State,
