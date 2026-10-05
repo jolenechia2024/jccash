@@ -47,13 +47,37 @@
   --border: oklch(1 0 0 / 10%);
 }
 
+html.light {
+  --background: oklch(0.97 0.004 150);
+  --foreground: oklch(0.15 0.01 150);
+  --card: oklch(0 0 0 / 4%);
+  --primary: oklch(0.5 0.2 150);
+  --primary-foreground: oklch(0.97 0.004 150);
+  --secondary: oklch(0 0 0 / 7%);
+  --muted: oklch(0 0 0 / 6%);
+  --muted-foreground: oklch(0.15 0.01 150 / 55%);
+  --accent: oklch(0.55 0.23 22);
+  --accent-foreground: oklch(0.98 0 0);
+  --border: oklch(0 0 0 / 12%);
+}
+
 @layer base {
-  * { border-color: var(--color-border); }
+  * {
+    border-color: var(--color-border);
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-tap-highlight-color: transparent;
+  }
+  select {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='13' height='13'%3E%3Cpath fill='none' stroke='%23888' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.65rem center;
+    padding-right: 2rem !important;
   }
 }
 
