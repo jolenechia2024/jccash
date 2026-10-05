@@ -4,8 +4,8 @@
   "description": "Offline exchange budget tracker",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0b0f0c",
-  "theme_color": "#0b0f0c",
+  "background_color": "#111111",
+  "theme_color": "#111111",
   "icons": [
     { "src": "/favicon.png", "sizes": "64x64", "type": "image/png" },
     { "src": "/icon-512.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any maskable" }

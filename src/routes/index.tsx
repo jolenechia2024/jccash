@@ -112,10 +112,10 @@ function App() {
   } as React.CSSProperties;
 
   return (
-    <div className="relative min-h-dvh overflow-hidden" style={themeVars}>
+    <div className="relative min-h-dvh" style={themeVars}>
       <div className="pointer-events-none fixed inset-0">
-        <div className="absolute -top-32 -left-24 size-[420px] rounded-full bg-primary/20 blur-[120px]" />
-        <div className="absolute top-1/2 -right-32 size-[380px] rounded-full bg-accent/15 blur-[130px]" />
+        <div className="absolute -top-1/2 -left-1/4 h-[100vh] w-[80vw] rounded-full bg-primary/10 blur-[160px]" />
+        <div className="absolute top-1/3 -right-1/4 h-[80vh] w-[70vw] rounded-full bg-accent/8 blur-[160px]" />
       </div>
       <div className="relative mx-auto max-w-md px-5 pb-32 pt-6">
         <header className="mb-6 flex items-center justify-between">
