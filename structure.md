@@ -17,20 +17,20 @@ Publish directory: `dist/client` (Vite client build + post-build `scripts/genera
 
 ## Tech stack
 
-| Layer | Tool |
-| --- | --- |
-| Framework | TanStack Start (React SSR/SPA wrapper) |
-| Routing | TanStack Router — file-based, `src/routes/` |
-| UI components | shadcn/ui (new-york style) — Radix UI + Tailwind |
-| Styling | Tailwind CSS v4 |
-| State | Custom `useStore` hook — `useState` + `localStorage` (no external state library) |
-| Icons | Lucide React |
-| Charts | Conic-gradient (hand-rolled, no chart library) |
-| Runtime | Bun |
-| Build | Vite 8 + TanStack Start plugin + nitro |
-| Type checking | TypeScript strict |
-| Testing | Vitest + Testing Library |
-| Linting / formatting | ESLint + Prettier |
+| Layer                | Tool                                                                             |
+| -------------------- | -------------------------------------------------------------------------------- |
+| Framework            | TanStack Start (React SSR/SPA wrapper)                                           |
+| Routing              | TanStack Router — file-based, `src/routes/`                                      |
+| UI components        | shadcn/ui (new-york style) — Radix UI + Tailwind                                 |
+| Styling              | Tailwind CSS v4                                                                  |
+| State                | Custom `useStore` hook — `useState` + `localStorage` (no external state library) |
+| Icons                | Lucide React                                                                     |
+| Charts               | Conic-gradient (hand-rolled, no chart library)                                   |
+| Runtime              | Bun                                                                              |
+| Build                | Vite 8 + TanStack Start plugin + nitro                                           |
+| Type checking        | TypeScript strict                                                                |
+| Testing              | Vitest + Testing Library                                                         |
+| Linting / formatting | ESLint + Prettier                                                                |
 
 ## Build tooling files
 
@@ -124,3 +124,99 @@ State
 ```
 
 `stats()` derives everything shown on the home screen (spent, left, perDay, todayLeft, cashLeft) from `State` — no extra stored fields.
+
+## Math and algorithms
+
+### Currency conversion (`store.ts:238`)
+
+```
+sgd(expense) = expense.amount × expense.rate
+```
+
+`rate` is user-entered as "1 [currency] = ? SGD". All money stored and compared in SGD.
+
+### Person balances (`store.ts:241` — `personBalances`)
+
+Iterates the full ledger and accumulates a signed running total per person (keyed by lowercased name):
+
+```
+balance[person] += direction === "owed_to_me" ? +amountSGD : -amountSGD
+```
+
+Positive result = they owe me. Negative = I owe them. Rounded to 2 dp at each step to avoid float drift.
+
+### Budget stats (`store.ts:264` — `stats`)
+
+```
+spent    = Σ sgd(expense) − owedToMe + iOwe
+           (splits already reflected in expense totals, so we net them out)
+left     = budgetSgd − spent
+daysLeft = ceil((endDate − now) / 86400000)   [min 1]
+perDay   = (left + spentToday) / daysLeft
+```
+
+**Burnout date** — linear burn rate projection:
+
+```
+daysElapsed  = (now − startDate) / 86400000   [min 1]
+dailyBurnRate = spent / daysElapsed
+daysToEmpty  = left / dailyBurnRate
+burnoutDate  = now + daysToEmpty days
+               (shown only if burnoutDate < endDate and spent > 0 and left > 0)
+```
+
+### Equal group split with penny correction (`index.tsx:734` — `getSharesSGD`, equal mode)
+
+Avoids distributing fractional cents:
+
+```
+base = floor(totalSGD / n × 100) / 100      [per-person share, rounded down]
+rem  = round((totalSGD − base × n) × 100) / 100   [leftover cents]
+participants[0] gets base + rem; everyone else gets base
+```
+
+The first participant absorbs any rounding remainder (always < 1 cent × n).
+
+### Proportional group split (`index.tsx:746` — `getSharesSGD`, custom-weight mode)
+
+Each member has a raw weight (unitless); shares are scaled to `totalSGD`:
+
+```
+share[k] = round((weight[k] / Σweights) × totalSGD × 100) / 100
+rem      = round((totalSGD − Σshare[k]) × 100) / 100
+shares[keys[0]] += rem      [first key absorbs rounding remainder]
+```
+
+### Group net positions (`index.tsx:765` — `computeNets`)
+
+Computes each member's net position across all group expenses:
+
+```
+net[m] = Σ (paid[m] − share[m])   for each expense
+```
+
+Where `paid[m] = totalSGD` if `paidBy === m`, else 0. Positive = they are owed money back; negative = they owe the group.
+
+### Running balance (`index.tsx:783` — `runningBalances`)
+
+Sorts a single person's ledger entries by ISO date, then accumulates a signed running total:
+
+```
+running += direction === "owed_to_me" ? +amountSGD : -amountSGD
+```
+
+Returns each entry paired with `balanceAfter` — used to show per-entry balance history in the person detail view.
+
+### Fuzzy name matching (`index.tsx:719` — `levenshtein`)
+
+Classic dynamic-programming Levenshtein edit distance (insertions, deletions, substitutions each cost 1):
+
+```
+dp[0][j] = j,  dp[i][0] = i
+dp[i][j] = dp[i-1][j-1]                          if a[i-1] === b[j-1]
+         = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])   otherwise
+```
+
+Result is `dp[m][n]` — the minimum number of single-character edits to transform `a` into `b`.
+
+Used when adding a name to a group: if any existing member name has edit distance ≤ 2 from the typed name (case-insensitive), the app warns that the name might be a duplicate (`index.tsx:1735`).

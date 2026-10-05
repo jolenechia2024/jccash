@@ -7,6 +7,7 @@ This is a personal project. Do not add AI co-author credits, "Generated with Cla
 ## Before running builds or making it live
 
 Always ask before:
+
 - Running `bun run build`
 - Pushing any branch
 - Deploying or triggering any Netlify action
