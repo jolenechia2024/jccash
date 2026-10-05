@@ -48,7 +48,7 @@ function applyRecurring(s: State): State {
     changed = true;
     expenses.unshift({
       id: uid(), amount: r.amount, currency: s.currency, rate: s.rate, category: r.category,
-      note: `${r.label} (monthly)`, method: "card", trip: "Daily life", date: new Date().toISOString(),
+      note: `${r.label} (monthly)`, method: "card", trip: s.activeTrip, date: new Date().toISOString(),
     });
     return { ...r, lastAdded: month };
   });
@@ -78,12 +78,11 @@ export function stats(s: State) {
   const left = s.budgetSgd - spent;
   const end = new Date(s.end + "T23:59:59").getTime();
   const daysLeft = Math.max(1, Math.ceil((end - Date.now()) / 864e5));
-  const totalDays = Math.max(1, Math.ceil((end - new Date(s.start).getTime()) / 864e5));
   const t = today();
   const spentToday = s.expenses.filter((e) => e.date.slice(0, 10) === t).reduce((a, e) => a + sgd(e), 0);
   const perDay = (left + spentToday) / daysLeft;
   const cashSpent = s.expenses.filter((e) => e.method === "cash" && e.currency === s.currency).reduce((a, e) => a + e.amount, 0);
-  return { spent, left, daysLeft, totalDays, perDay, todayLeft: perDay - spentToday, perWeek: perDay * 7, cashLeft: s.cashWithdrawn - cashSpent };
+  return { spent, left, daysLeft, perDay, todayLeft: perDay - spentToday, perWeek: perDay * 7, cashLeft: s.cashWithdrawn - cashSpent };
 }
 
 export const fmt = (n: number, d = 2) => n.toLocaleString("en-SG", { minimumFractionDigits: d, maximumFractionDigits: d });

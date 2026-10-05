@@ -1,9 +1,9 @@
 [build]
   command = "bun run build"
-  publish = ".output/public"
+  publish = "dist/client"
 
 [build.environment]
-  NITRO_PRESET = "static"
+  BUN_VERSION = "1.4.2"
 
 [[redirects]]
   from = "/*"

@@ -81,7 +81,7 @@ function NavBtn({ t, tab, setTab }: { t: Tab; tab: Tab; setTab: (t: Tab) => void
 
 function Home({ state, update }: { state: State; update: Upd }) {
   const st = stats(state);
-  const pct = Math.min(100, Math.max(0, (st.spent / state.budgetSgd) * 100));
+  const pct = state.budgetSgd > 0 ? Math.min(100, Math.max(0, (st.spent / state.budgetSgd) * 100)) : 0;
   const over = st.todayLeft < 0;
   const owed = state.splits.filter((s) => !s.paid).reduce((a, s) => a + s.amount, 0);
   const recent = state.expenses.slice(0, 8);
