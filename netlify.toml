@@ -1,0 +1,10 @@
+[build]
+  command = "bun run build"
+  publish = ".netlify/static"
+
+[build.environment]
+  NITRO_PRESET = "netlify"
+
+[dev]
+  command = "bun run dev"
+  port = 3000
