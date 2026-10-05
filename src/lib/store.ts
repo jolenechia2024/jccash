@@ -1,6 +1,12 @@
 import { useEffect, useState } from "react";
 
 export const CATEGORIES = ["Food", "Transport", "Travel", "Rent", "Groceries", "Fun", "Other"] as const;
+
+export const CURRENCIES = [
+  "AED", "AUD", "CAD", "CHF", "CNY", "CZK", "DKK", "EUR", "GBP",
+  "HKD", "HUF", "IDR", "ILS", "INR", "JPY", "KRW", "MXN", "MYR",
+  "NOK", "NZD", "PHP", "PLN", "SEK", "SGD", "THB", "TRY", "TWD", "USD", "VND", "ZAR",
+] as const;
 export type Category = (typeof CATEGORIES)[number];
 export const CAT_EMOJI: Record<string, string> = {
   Food: "🍜", Transport: "🚆", Travel: "✈️", Rent: "🏠", Groceries: "🛒", Fun: "🎉", Other: "✦",
@@ -25,12 +31,12 @@ const today = () => new Date().toISOString().slice(0, 10);
 const plus = (d: number) => new Date(Date.now() + d * 864e5).toISOString().slice(0, 10);
 
 const DEFAULT: State = {
-  budgetSgd: 6000, start: today(), end: plus(120), currency: "EUR", rate: 1.46,
+  budgetSgd: 0, start: today(), end: plus(120), currency: "EUR", rate: 0,
   trips: ["Daily life"], activeTrip: "Daily life", cashWithdrawn: 0,
   expenses: [], splits: [], recurring: [],
 };
 
-const KEY = "tally-v1";
+const KEY = "jccash-v1";
 export const uid = () => Math.random().toString(36).slice(2, 10);
 
 function applyRecurring(s: State): State {
@@ -88,6 +94,6 @@ export function exportCsv(s: State) {
   const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-  a.download = `tally-${today()}.csv`;
+  a.download = `jccash-${today()}.csv`;
   a.click();
 }

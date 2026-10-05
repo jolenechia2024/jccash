@@ -1,16 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import capybaraLogo from "@/assets/capybara-logo.png";
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import {
-  CATEGORIES, CAT_EMOJI, exportCsv, fmt, sgd, stats, uid, useStore, type State,
+  CATEGORIES, CURRENCIES, CAT_EMOJI, exportCsv, fmt, sgd, stats, uid, useStore, type Split, type State,
 } from "@/lib/store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Tally — exchange budget tracker" },
+      { title: "jccash — exchange budget tracker" },
       { name: "description", content: "Log spending in 2 taps, see SGD equivalents and how much you can spend per day. Offline, no login." },
-      { property: "og:title", content: "Tally — exchange budget tracker" },
+      { property: "og:title", content: "jccash — exchange budget tracker" },
       { property: "og:description", content: "Two-tap expense logging with daily budget left, multi-currency and split bills." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -36,8 +36,8 @@ function App() {
       <div className="relative mx-auto max-w-md px-5 pb-32 pt-6">
         <header className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src={capybaraLogo} alt="Tally capybara" width={1024} height={1024} className="size-9 rounded-lg ring-1 ring-primary/40" />
-            <span className="text-sm font-semibold uppercase tracking-[0.25em]">Tally</span>
+            <img src={capybaraLogo} alt="jccash capybara" width={1024} height={1024} className="size-9 rounded-lg ring-1 ring-primary/40" />
+            <span className="text-sm font-semibold uppercase tracking-[0.25em]">jccash</span>
           </div>
           <select
             value={state.activeTrip}
@@ -91,8 +91,8 @@ function Home({ state, update }: { state: State; update: Upd }) {
       <section className="glass relative overflow-hidden p-7">
         <div className="absolute -right-20 -top-20 size-56 rotate-12 rounded-3xl bg-primary/20 blur-2xl" />
         <p className="label-caps relative">You can spend</p>
-        <div className="relative mt-3 font-mono text-6xl font-bold tracking-tighter tabular-nums">
-          S${fmt(Math.max(0, st.perDay), 0)}<span className="text-2xl text-muted-foreground">/day</span>
+        <div className="relative mt-3 font-mono text-6xl font-bold tabular-nums">
+          <span className="tracking-tighter">S${fmt(Math.max(0, st.perDay), 0)}</span><span className="ml-1.5 text-2xl font-normal tracking-wide text-muted-foreground">/day</span>
         </div>
         <p className="relative mt-2 text-sm text-muted-foreground">
           for the rest of the trip · {st.daysLeft} days left · S${fmt(st.perWeek, 0)}/week
@@ -257,6 +257,14 @@ function SplitView({ state, update }: { state: State; update: Upd }) {
   const [name, setName] = useState("");
   const [amt, setAmt] = useState("");
   const [note, setNote] = useState("");
+  const share = async (s: Split) => {
+    const msg = `Hey ${s.name}! You owe me S$${fmt(s.amount)}${s.note ? ` for ${s.note}` : ""} — jccash`;
+    if (navigator.share) {
+      await navigator.share({ text: msg }).catch(() => {});
+    } else {
+      await navigator.clipboard.writeText(msg).catch(() => {});
+    }
+  };
   const add = () => {
     const a = parseFloat(amt);
     if (!name || !a) return;
@@ -292,6 +300,7 @@ function SplitView({ state, update }: { state: State; update: Upd }) {
               {s.note && <p className="text-xs text-muted-foreground">{s.note}</p>}
             </div>
             <span className={`font-mono text-sm font-bold ${s.paid ? "" : "text-accent"}`}>S${fmt(s.amount)}</span>
+            <button onClick={() => share(s)} className="text-xs text-muted-foreground hover:text-primary">Send</button>
             <button onClick={() => update((st) => ({ ...st, splits: st.splits.filter((x) => x.id !== s.id) }))} className="text-xs text-muted-foreground hover:text-accent">✕</button>
           </div>
         ))}
@@ -312,6 +321,48 @@ function Settings({ state, update }: { state: State; update: Upd }) {
   const set = <K extends keyof State>(k: K, v: State[K]) => update((s) => ({ ...s, [k]: v }));
   const [trip, setTrip] = useState("");
   const [rl, setRl] = useState(""); const [ra, setRa] = useState(""); const [rc, setRc] = useState("Rent");
+  const [fetching, setFetching] = useState(false);
+  const [rateError, setRateError] = useState("");
+
+  const backup = () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(state, null, 2)], { type: "application/json" }));
+    a.download = `jccash-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+  };
+  const restore = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const text = ev.target?.result;
+        if (typeof text !== "string") return;
+        update(() => JSON.parse(text) as State);
+      } catch { /* ignore invalid file */ }
+    };
+    reader.readAsText(file);
+  };
+
+  const fetchRate = async () => {
+    if (state.currency === "SGD") { set("rate", 1); return; }
+    setFetching(true);
+    setRateError("");
+    try {
+      const res = await fetch(
+        `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${state.currency.toLowerCase()}.json`
+      );
+      if (!res.ok) throw new Error();
+      const data = await res.json() as Record<string, Record<string, number>>;
+      const r = data[state.currency.toLowerCase()]?.["sgd"];
+      if (!r) throw new Error();
+      set("rate", Math.round(r * 10000) / 10000);
+    } catch {
+      setRateError("Could not fetch — check connection");
+    } finally {
+      setFetching(false);
+    }
+  };
 
   return (
     <div className="space-y-4 animate-in fade-in duration-500">
@@ -324,14 +375,28 @@ function Settings({ state, update }: { state: State; update: Upd }) {
       </section>
 
       <section className="glass space-y-4 p-5">
-        <p className="label-caps text-primary">Exchange rate · works offline</p>
+        <p className="label-caps text-primary">Exchange rate</p>
         <div className="flex items-center gap-2">
           <span className="font-mono text-sm">1</span>
-          <div className="w-24"><Input value={state.currency} onChange={(v) => set("currency", v.toUpperCase().slice(0, 4))} /></div>
+          <select
+            value={state.currency}
+            onChange={(e) => { set("currency", e.target.value); setRateError(""); }}
+            className="rounded-xl border bg-muted px-3 py-2.5 text-sm outline-none focus:border-primary"
+          >
+            {CURRENCIES.map((c) => <option key={c} className="bg-background">{c}</option>)}
+          </select>
           <span className="font-mono text-sm">=</span>
           <Input type="number" value={state.rate} onChange={(v) => set("rate", +v || 0)} />
           <span className="font-mono text-sm">SGD</span>
         </div>
+        <button
+          onClick={fetchRate}
+          disabled={fetching || !state.currency}
+          className="w-full rounded-xl border border-primary py-2.5 text-sm font-semibold text-primary disabled:opacity-40"
+        >
+          {fetching ? "Fetching..." : "Fetch live rate"}
+        </button>
+        {rateError && <p className="text-xs text-accent">{rateError}</p>}
         <Field label={`Cash withdrawn (${state.currency})`}><Input type="number" value={state.cashWithdrawn} onChange={(v) => set("cashWithdrawn", +v || 0)} /></Field>
       </section>
 
@@ -341,7 +406,10 @@ function Settings({ state, update }: { state: State; update: Upd }) {
           {state.trips.map((t) => (
             <span key={t} className="flex items-center gap-2 rounded-full border px-3 py-1 text-xs">
               {t}
-              {t !== "Daily life" && <button onClick={() => update((s) => ({ ...s, trips: s.trips.filter((x) => x !== t), activeTrip: s.activeTrip === t ? "Daily life" : s.activeTrip }))} className="text-muted-foreground hover:text-accent">✕</button>}
+              <button
+                onClick={() => update((s) => { const trips = s.trips.filter((x) => x !== t); return { ...s, trips, activeTrip: s.activeTrip === t ? (trips[0] ?? "") : s.activeTrip }; })}
+                className="text-muted-foreground hover:text-accent"
+              >✕</button>
             </span>
           ))}
         </div>
@@ -372,7 +440,12 @@ function Settings({ state, update }: { state: State; update: Upd }) {
       </section>
 
       <section className="glass space-y-2 p-5">
-        <button onClick={() => exportCsv(state)} className="w-full rounded-xl bg-primary py-3 text-sm font-bold uppercase tracking-widest text-primary-foreground">Export CSV</button>
+        <button onClick={backup} className="w-full rounded-xl bg-primary py-3 text-sm font-bold uppercase tracking-widest text-primary-foreground">Backup data</button>
+        <label className="block w-full cursor-pointer rounded-xl border py-3 text-center text-sm font-semibold text-foreground hover:border-primary">
+          Restore from backup
+          <input type="file" accept=".json" className="hidden" onChange={restore} />
+        </label>
+        <button onClick={() => exportCsv(state)} className="w-full rounded-xl border border-primary py-3 text-sm font-semibold text-primary">Export CSV</button>
         <button onClick={() => { if (confirm("Delete all expenses?")) update((s) => ({ ...s, expenses: [], splits: [] })); }} className="w-full rounded-xl border border-accent/50 py-3 text-sm font-semibold text-accent">Clear all data</button>
         <p className="pt-1 text-center text-xs text-muted-foreground">Saved on this device only · no login · nothing uploaded</p>
       </section>
