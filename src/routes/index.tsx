@@ -35,7 +35,7 @@ function App() {
       <div className="relative mx-auto max-w-md px-5 pb-32 pt-6">
         <header className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="grid size-8 place-items-center rounded-lg bg-primary/15 font-bold text-primary ring-1 ring-primary/40">t</div>
+            <img src={capybaraLogo} alt="Tally capybara" width={1024} height={1024} className="size-9 rounded-lg ring-1 ring-primary/40" />
             <span className="text-sm font-semibold uppercase tracking-[0.25em]">Tally</span>
           </div>
           <select
