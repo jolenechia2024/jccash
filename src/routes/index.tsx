@@ -155,7 +155,7 @@ function QuickAdd({ state, update, onClose }: { state: State; update: Upd; onClo
   const press = (k: string) => {
     if (k === "⌫") return setAmt((a) => a.slice(0, -1));
     if (k === "." && amt.includes(".")) return;
-    if (amt.split(".")[1]?.length >= 2) return;
+    if ((amt.split(".")[1]?.length ?? 0) >= 2) return;
     setAmt((a) => a + k);
   };
   const save = (category: string) => {
