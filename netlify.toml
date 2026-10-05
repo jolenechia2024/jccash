@@ -1,9 +1,14 @@
 [build]
   command = "bun run build"
-  publish = ".netlify/static"
+  publish = ".output/public"
 
 [build.environment]
-  NITRO_PRESET = "netlify"
+  NITRO_PRESET = "static"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
 
 [dev]
   command = "bun run dev"
